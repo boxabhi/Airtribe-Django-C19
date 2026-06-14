@@ -1,0 +1,25 @@
+
+{% extends 'base.html' %}
+{% block content %}
+    <h1 style="color: blue;">Welcome to the Home Page</h1>
+    <p>This is the index page of the Django application.</p>   
+    <div class="container">
+        <ul class="list-group">
+        {% for task in tasks %}
+            <li class="list-group-item">
+                Id: {{ task.id }} | Task Name: {{ task.task_name }} | Completed: {{ task.is_completed }}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+
+
+    <form class="container">
+        <input class="form-control" type="text" name="task_name" placeholder="Enter task name">
+        <input type="checkbox" class="form-check-input" name="is_completed"> Completed
+        <br><br>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+
+    </form>
+{% endblock %}
