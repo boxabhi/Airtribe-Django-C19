@@ -1,6 +1,6 @@
 import random
 from django.conf.locale import ta
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render,redirect
 from home.models import Department, Employee, Person, Skills, TaskManager
 from faker import Faker
@@ -151,6 +151,41 @@ def login_view(request):
 
        
     return render(request, 'login.html')
+
+
+def token_profile_view(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Authentication credentials were not provided.'}, status=401)
+
+    return JsonResponse({
+        'user_id': request.user.id,
+        'username': request.user.username,
+        'email': request.user.email,
+    })
+
+
+def api_dashboard(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'authenticated': False,
+            'detail': 'Authentication credentials were not provided.',
+            'cache_key': getattr(request, 'token_auth_cache_key', None),
+            'cache_status': getattr(request, 'token_auth_cache_status', 'NO_TOKEN'),
+            'user_source': getattr(request, 'token_auth_user_source', 'NO_TOKEN'),
+        }, status=401)
+
+    return JsonResponse({
+        'authenticated': True,
+        'message': 'Welcome to dashboard',
+        'user': {
+            'id': request.user.id,
+            'username': request.user.username,
+            'email': request.user.email,
+        },
+        'cache_key': getattr(request, 'token_auth_cache_key', None),
+        'cache_status': getattr(request, 'token_auth_cache_status', 'NO_TOKEN'),
+        'user_source': getattr(request, 'token_auth_user_source', 'NO_TOKEN'),
+    })
 
 
 @login_required(login_url='/login/')

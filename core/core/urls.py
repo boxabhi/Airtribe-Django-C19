@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
+
 from home.views import (
-    create_todo, dashboard, delete_task, employee_list, index, contact, about,
-    insert_task, login_view, logout_view, seed_fake_data, todo, update_task,registration)
+    api_dashboard, create_todo, dashboard, delete_task, employee_list, index, contact, about,
+    insert_task, login_view, logout_view, seed_fake_data, todo, token_profile_view,
+    update_task,registration)
 from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
@@ -34,9 +37,10 @@ urlpatterns = [
     path('employee_list/', employee_list, name='employee_list'),
     path('registration/', registration, name='registration'),
     path('login/', login_view, name='login'),
+    path('api/token/', obtain_auth_token, name='token_login'),
+    path('api/me/', token_profile_view, name='token_profile'),
+    path('api/dashboard/', api_dashboard, name='api_dashboard'),
     path('dashboard/', dashboard, name='dashboard'),
     path('logout/', logout_view, name='logout'),
     path('admin/', admin.site.urls),
 ] + debug_toolbar_urls()
-
-
