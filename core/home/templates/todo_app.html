@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-5 col-6 p-5">
+    <h1>Todo App</h1>
+    <form method="POST" action="{% url 'create_todo' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="task_name" class="form-label">Task Name</label>
+            <input type="text" class="form-control"  name="task_name" required>
+        </div>
+        <button type="submit" class="btn btn-success">Add Task</button>
+    </form>
+
+    <h2 class="mt-5">Tasks</h2>
+    {% if tasks%}
+    <ul class="list-group">
+        {% for task in tasks %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ forloop.counter }}. {{ task.task_name }}
+             
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal-{{forloop.counter}}">
+                <i class="fa-solid fa-pencil"></i>
+                </button>
+
+              <a href="{% url 'delete_task' task.id %}">
+              <i class="fa-regular fa-trash-can" style="color :red"></i>
+              </a>
+
+              <div class="modal fade" id="exampleModal-{{ forloop.counter }}" tabindex="-1" aria-labelledby="exampleModalLabel-{{ forloop.counter}}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel-{{ forloop.counter}}">Modal title</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    <form method="POST" action="{% url 'update_task' task.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="task_name" class="form-label">Task Name</label>
+                            <input type="text" class="form-control" value="{{ task.task_name }}"  name="task_name" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Update Task</button>
+                    </form>
+                    </div>
+                   
+                    </div>
+                </div>
+                </div>
+            </li>
+        {% endfor  %}
+    </ul>
+    {% else %}
+        <p>No tasks available.</p>
+    {% endif %}
+
+
+{% endblock %}

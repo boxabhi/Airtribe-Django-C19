@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container col-6 mt-5">
+        <h1 style="color: green;">Dashboard</h1>
+        <p>Welcome to your dashboard!</p>
+        <p>Only authenticated users can access this page.</p>
+        
+        <p>Hi,{{request.user.username}} You are logged in!</p>
+        
+        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+
+    </div>
+{% endblock %}

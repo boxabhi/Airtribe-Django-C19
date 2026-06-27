@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container col-6 mt-5    ">
+        <h1 style="color: green;">User Registration</h1>
+
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert"> {{ message }}  </div>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <form method="post" action="{% url 'registration' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group mt-2">
+                <label for="first_name">First Name:</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+            </div>
+            <div class="form-group mt-2">
+                <label for="last_name">Last Name:</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" required>
+            </div>
+            <div class="form-group mt-2">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group mt-2">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <a href="{% url 'login' %}">Already have an account? Login here.</a>
+            <br>
+            <button type="submit" class="btn btn-primary mt-4">Register</button>
+        </form>
+    </div>
+{% endblock %}

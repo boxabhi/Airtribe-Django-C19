@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Employee List</h1>
+<ul>
+    {% for department in departments %}
+        <li>{{ department.name }}</li>
+        <ul>
+            {% for employee in department.employees.all %}
+                <li>{{ employee.name }} - Skills: {{ employee.skills.all|join:", " }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</ul>
+
+{% endblock %}
