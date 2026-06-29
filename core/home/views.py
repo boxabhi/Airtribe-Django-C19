@@ -1,7 +1,7 @@
 import random
-from django.conf.locale import ta
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render,redirect
+from .serializers import DepartmentSerializer,EmployeeSerializer, SkillsSerializer
 from home.models import Department, Employee, Person, Skills, TaskManager
 from faker import Faker
 from django.db.models import Q
@@ -162,3 +162,146 @@ def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect('login')
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(['GET', 'POST','PUT', 'DELETE'])
+def example_api(request):
+    if request.method == 'GET':
+        payload = {
+            "method" : "GET",
+            "message" : "This is a GET API response",
+            "status" : 200,
+            "bool" : True,
+            "fruits" : ["apple", "banana", "cherry"],
+        }
+        return Response(payload)
+
+    if request.method == 'POST':
+        data = request.data
+        payload = {
+            "method" : "POST",
+            "message" : "This is a POST API response",
+            "status" : 200,
+            "bool" : True,
+            "payload" : data
+        }
+        return Response(payload)
+
+    if request.method == 'PUT':
+        data = request.data
+        payload = {
+            "method" : "PUT",
+            "message" : "This is a PUT API response",
+            "status" : 200,
+            "bool" : True,
+            "payload" : data
+        }
+        return Response(payload)
+
+    return Response({"message": "This is a default API response"})
+
+
+
+from rest_framework import status
+
+@api_view(['GET','POST','PUT','PATCH','DELETE'])
+def department_api(request):
+    if request.method == 'GET':
+        department = Department.objects.all()
+        serializer = DepartmentSerializer(department, many=True)
+        return Response({'departments': serializer.data}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'POST':
+        data = request.data
+        serializer = DepartmentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Department created successfully", "payload": serializer.data})
+        return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
+
+
+    if request.method == 'PUT':
+        data = request.data
+        if data.get('id') is None:
+            return Response({"message": "Department ID is required for update"}, status=400)
+
+        department_obj = Department.objects.filter(id=data.get('id')).first()
+        if not department_obj:
+            return Response({"message": "Department not found"}, status=404)
+
+        serializer = DepartmentSerializer(department_obj, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Department updated successfully", "payload": serializer.data},status=200)
+
+        return Response({"message": "Department not updated", "payload": serializer.errors}, status=501)
+
+    if request.method == 'PATCH':
+        data = request.data
+        if data.get('id') is None:
+            return Response({"message": "Department ID is required for update"}, status=400)
+
+        department_obj = Department.objects.filter(id=data.get('id')).first()
+        if not department_obj:
+            return Response({"message": "Department not found"}, status=404)
+
+        serializer = DepartmentSerializer(department_obj, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Department updated successfully", "payload": serializer.data})
+
+        return Response({"message": "Department not updated", "payload": serializer.errors}, status=501)
+
+    if request.method == 'DELETE':
+        data = request.data
+        if data.get('id') is None:
+            return Response({"message": "Department ID is required for deletion"}, status=400)
+
+        department_obj = Department.objects.filter(id=data.get('id')).first()
+        if not department_obj:
+            return Response({"message": "Department not found"}, status=404)
+
+        department_obj.delete()
+        return Response({"message": "Department deleted successfully"})
+
+    return Response({"message": "Invalid Method"})
+
+
+@api_view(['POST'])
+def skills_post_api(request):
+    if request.method == 'POST':
+        data = request.data
+        serializer = SkillsSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Skill created successfully", "payload": serializer.data})
+        return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
+
+
+@api_view(['DELETE'])
+def skills_delete_api(request):
+    if request.method == 'DELETE':
+        data = request.data
+        if data.get('id') is None:
+            return Response({"message": "Skill ID is required for deletion"}, status=400)
+        skill_obj = Skills.objects.filter(id=data.get('id')).first()
+        if not skill_obj:
+            return Response({"message": "Skill not found"}, status=404)
+        skill_obj.delete()
+        return Response({"message": "Skill deleted successfully"})
+
+    return Response({"message": "Invalid Method"})
+
+   
+
+
+
+@api_view(['GET'])
+def employee_api(request):
+    employees = Employee.objects.filter(is_active=True)
+    serializer = EmployeeSerializer(employees, many=True)
+    return Response({'employees': serializer.data})

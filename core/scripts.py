@@ -43,3 +43,6 @@ seven = Department.objects.annotate(
     emp_25 = Count('employees', filter=Q(employees__age__lt=25),),
     emp_active_30 = Count('employees', filter=Q(employees__age__gt=30, employees__is_active=True))
 )
+
+departments = Department.objects.annotate(
+    employee_count=Avg('employees__salary'))

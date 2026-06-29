@@ -6,28 +6,37 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
-
-class TaskManager(models.Model):
-    task_name = models.CharField(max_length=255)
-    is_completed = models.BooleanField(default=False)
+class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        abstract = True
 
-class TaskHistory(models.Model):
+
+class TaskManager(BaseModel):
+    task_name = models.CharField(max_length=255)
+    is_completed = models.BooleanField(default=False)
+
+
+class TaskHistory(BaseModel):
     action = models.CharField(max_length=255)
-    timestamp = models.DateTimeField(auto_now_add=True)
 
 # gmail.com rediff.com yahoo.com
 
-class Person(models.Model):
+class Person(BaseModel):
     name = models.CharField(max_length=255)
     email = models.EmailField()
     age = models.IntegerField()
     phone_number = models.CharField(max_length=20)
     address = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Person"
+        verbose_name_plural = "People"
+        db_table = "person"
+        ordering = ['name']
+
 
     def __str__(self):
         return f"Person - {self.name} | Age : {self.age}"
@@ -35,29 +44,38 @@ class Person(models.Model):
 
 
 
-class Company(models.Model):
+class Company(BaseModel):
     name = models.CharField(max_length=255)
     address = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Company - {self.name}"
 
+    class Meta:
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
 
-class Department(models.Model):
+
+class Department(BaseModel):
     name = models.CharField(max_length=255) # IT , HR , Finance, Marketing
-    created_at = models.DateTimeField(auto_now_add=True)
+    tag = models.CharField(max_length=10) # IT , HR , Finance, Marketing
 
     def __str__(self):
         return f"Department - {self.name}"
 
+    class Meta:
+        verbose_name = "Department"
+        verbose_name_plural = "Department"
+        db_table = "Department"
 
-class Skills(models.Model):
+
+class Skills(BaseModel):
     name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Skill - {self.name}"
-class Employee(models.Model):
+class Employee(BaseModel):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     age = models.IntegerField()
