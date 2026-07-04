@@ -16,12 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from home.views import (department_api, employee_api, example_api)
+from home.views import (create_employee_api, department_api, employee_api, example_api, login_api, logout_api, register_api)
 
 
 urlpatterns = [
     path('departments/', department_api, name='department_api'),
     path('employees/', employee_api, name='employee_api'),
+    path('create-employee/', create_employee_api, name='create_employee_api'),
+    path('register/', register_api, name='register_api'),
+    path('login/', login_api, name='login_api'),
+    path('logout/', logout_api, name='logout_api'),
     path('api-view/', example_api, name='api_view'),
 ]
 

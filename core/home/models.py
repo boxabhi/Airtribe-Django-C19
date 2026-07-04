@@ -76,8 +76,9 @@ class Skills(BaseModel):
     def __str__(self):
         return f"Skill - {self.name}"
 class Employee(BaseModel):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=10)
+    email = models.EmailField(null = True, blank = True)
     age = models.IntegerField()
     salary = models.DecimalField(max_digits=10, decimal_places=2)
     city = models.CharField(max_length=100)
@@ -87,5 +88,14 @@ class Employee(BaseModel):
     skills = models.ManyToManyField(Skills, related_name='employees')
 
     def __str__(self):
-        return f"Employee - {self.name} | Department : {self.department.name}"
+        return f"Employee - {self.name}"
+
+
+class EmployeeLog(BaseModel):
+    employee_email = models.EmailField()
+    action = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"EmployeeLog - {self.employee_email} | Action: {self.action}"
+
 

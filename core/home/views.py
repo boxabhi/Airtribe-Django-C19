@@ -1,7 +1,7 @@
 import random
 from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render,redirect
-from .serializers import DepartmentSerializer,EmployeeSerializer, SkillsSerializer
+from .serializers import CreateEmployeeSerializer, DepartmentSerializer,EmployeeSerializer, LoginSerializer, ResgiterSerializer, SkillsSerializer
 from home.models import Department, Employee, Person, Skills, TaskManager
 from faker import Faker
 from django.db.models import Q
@@ -9,6 +9,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 
@@ -301,7 +304,53 @@ def skills_delete_api(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def employee_api(request):
-    employees = Employee.objects.filter(is_active=True)
+    print("**********")
+    print(request.user, request.user.id, request.user.username)
+    print("**********")
+    employees = Employee.objects.filter(user = request.user).order_by('-id')
     serializer = EmployeeSerializer(employees, many=True)
     return Response({'employees': serializer.data})
+
+@api_view(['POST'])
+def create_employee_api(request):
+    data = request.data
+    serializer = CreateEmployeeSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        
+        return Response({"message": "Employee created successfully", "payload": serializer.data})
+    return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
+
+
+@api_view(['POST'])
+def register_api(request):
+    data = request.data
+    serializer = ResgiterSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "User registered successfully", "payload": serializer.data})
+    return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
+
+
+@api_view(['POST'])
+def login_api(request):
+    data = request.data
+    serializer = LoginSerializer(data=data)
+    if serializer.is_valid():
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"message": "Login successful", "token" : token.key})
+        else:
+            return Response({"message": "Wrong password"}, status=401)
+    return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def logout_api(request):
+    request.user.auth_token.delete()
+    return Response({"message": "Logout successful"})
