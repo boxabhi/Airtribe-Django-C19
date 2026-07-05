@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
 
 
@@ -343,8 +344,12 @@ def login_api(request):
         password = serializer.validated_data['password']
         user = authenticate(username=username, password=password)
         if user is not None:
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({"message": "Login successful", "token" : token.key})
+            #token, _ = Token.objects.get_or_create(user=user)
+            jwt_token = RefreshToken.for_user(user)
+            return Response({"message": "Login successful", "token" : {
+                'refresh': str(jwt_token),
+                'access': str(jwt_token.access_token),
+            }})
         else:
             return Response({"message": "Wrong password"}, status=401)
     return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
