@@ -2,16 +2,12 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.aggregates import Count
 from django.contrib.auth.models import User
+from utility.models import BaseModel
 
 # Create your models here.
 
 
-class BaseModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        abstract = True
 
 
 class TaskManager(BaseModel):

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'home',
     # 'rest_framework.authtoken'    ,
     'rest_framework_simplejwt',
+    'hotel',
 ]
 
 MIDDLEWARE = [
