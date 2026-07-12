@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from hotel.models import Amenity, Hotel,Booking, HotelRating
-from hotel.serializers import AmenitySerializer, HotelSerializer
+from hotel.serializers import AmenitySerializer, BookingSerializer, HotelRatingSerializer, HotelSerializer
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 
 
@@ -239,3 +239,45 @@ class HotelAPI(APIView):
 
         serializer = HotelSerializer(queryset, many=True)
         return Response({"message": "Hotels fethched","count" : queryset.count(), "data": serializer.data, "status" : True})
+
+
+
+class BookingAPI(APIView):
+    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        print(user.id)
+        return Response({"message": "Bookings fethched", "data": {}, "status" : True})
+    
+    def post(self, request):
+        user = request.user 
+        data = request.data
+        data['user'] = user.id
+        serializer = BookingSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Booking created successfully!", "data": serializer.data, "status" : True})
+        return Response({"message": "Booking creation failed!", "errors": serializer.errors, "status" : False})
+
+
+
+class HotelRatingAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        ratings = HotelRating.objects.filter(user=user)
+        serializer = HotelRatingSerializer(ratings, many=True)
+        return Response({"message": "Ratings fetched", "data": serializer.data, "status" : True})
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+        data['user'] = user.id
+        serializer = HotelRatingSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Rating created successfully!", "data": serializer.data, "status" : True})
+        return Response({"message": "Rating creation failed!", "errors": serializer.errors, "status" : False})
