@@ -1,13 +1,15 @@
 from decimal import Decimal
 import random
 
+from django.http import request
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from hotel.models import Amenity, Hotel,Booking, HotelRating
 from hotel.serializers import AmenitySerializer, BookingSerializer, HotelRatingSerializer, HotelSerializer
-from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
+from rest_framework import mixins,generics
 
 
 
@@ -281,3 +283,97 @@ class HotelRatingAPI(APIView):
             serializer.save()
             return Response({"message": "Rating created successfully!", "data": serializer.data, "status" : True})
         return Response({"message": "Rating creation failed!", "errors": serializer.errors, "status" : False})
+
+
+
+class AmenityAPIMixin(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+    queryset = Amenity.objects.all()
+    serializer_class = AmenitySerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+from rest_framework import viewsets
+from rest_framework.decorators import action
+
+
+
+class AmenityViewset(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Amenity.objects.all()
+    serializer_class = AmenitySerializer
+
+
+
+
+
+    @action(detail=False, methods=['POST'])
+    def cancel_amenity(self, request):
+        data = request.data
+        if data.get("id") is None:
+            return Response({"message": "Amenity ID is required for deletion!", "status" : False})
+        amenity = Amenity.objects.filter(id=data.get("id")).first()
+        if not amenity:
+            return Response({"message": "Amenity not found!", "status" : False})
+        #amenity.is_cancel = True
+        amenity.save()
+        return Response({"message": "Amenity cancelled successfully!", "status" : True})
+       
+
+    @action(detail=True, methods=['GET'], url_path='invoice')
+    def invoice_amenity(self, request, pk):
+        data = request.data
+        if pk is None:
+            return Response({"message": "Amenity ID is required for invoice!", "status" : False})
+        amenity = Amenity.objects.filter(id=pk).first()
+        if not amenity:
+            return Response({"message": "Amenity not found!", "status" : False})
+        # Logic to generate invoice for the amenity
+        # For demonstration, we'll just return a success message
+        return Response({"message": f"Invoice generated for Amenity ID {amenity.id}!", "status" : True})
+
+
+from utility.permissions import IsManager,RoleAccess
+
+class AmenityViewset(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated,IsManager]
+    queryset = Amenity.objects.all()
+    serializer_class = AmenitySerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"count" : queryset.count(),"message": "Amenities fetched successfully", "data": serializer.data, "status" : True})
+
+    def create(self, request, *args, **kwargs):
+        
+        return super().create(request, *args, **kwargs)
+    
+
+    @action(detail=False, methods=['POST'])
+    def cancel_amenity(self, request):
+        data = request.data
+        if data.get("id") is None:
+            return Response({"message": "Amenity ID is required for deletion!", "status" : False})
+        amenity = Amenity.objects.filter(id=data.get("id")).first()
+        if not amenity:
+            return Response({"message": "Amenity not found!", "status" : False})
+        #amenity.is_cancel = True
+        amenity.save()
+        return Response({"message": "Amenity cancelled successfully!", "status" : True})
+       
+
+    @action(detail=True, methods=['GET'], url_path='invoice')
+    def invoice_amenity(self, request, pk):
+        data = request.data
+        if pk is None:
+            return Response({"message": "Amenity ID is required for invoice!", "status" : False})
+        amenity = Amenity.objects.filter(id=pk).first()
+        if not amenity:
+            return Response({"message": "Amenity not found!", "status" : False})
+        # Logic to generate invoice for the amenity
+        # For demonstration, we'll just return a success message
+        return Response({"message": f"Invoice generated for Amenity ID {amenity.id}!", "status" : True})
