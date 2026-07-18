@@ -21,8 +21,10 @@ from home.views import (
     insert_task, login_view, logout_view, seed_fake_data, todo, update_task,registration)
 from debug_toolbar.toolbar import debug_toolbar_urls
 
+
 urlpatterns = [
     path('', index, name='index'),
+    path('', include('django_prometheus.urls')),
     path('contact/', contact, name='contact'),
     path('about/', about, name='about'),
     path('insert_task/', insert_task, name='insert_task'),
@@ -39,6 +41,7 @@ urlpatterns = [
 
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
+
 ] + debug_toolbar_urls()
 
 

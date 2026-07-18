@@ -10,8 +10,8 @@ from hotel.models import Amenity, Hotel,Booking, HotelRating
 from hotel.serializers import AmenitySerializer, BookingSerializer, HotelRatingSerializer, HotelSerializer
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from rest_framework import mixins,generics
-
-
+import logging
+logger = logging.getLogger(__name__)
 
 class AmenityAPI(APIView):
     permission_classes = [IsAuthenticated,IsAdminUser] #IsAdminUser
@@ -209,9 +209,11 @@ class AdminHotelAPI(APIView):
         return Response({"message": "Hotel deleted successfully!", "status" : True})
 
 
-
+import time
 class HotelAPI(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
+        time.sleep(5)  # Simulate a delay for testing purposes
         queryset = Hotel.objects.all()
         state  = request.GET.get("state")
         price = request.GET.get("price")
@@ -246,11 +248,10 @@ class HotelAPI(APIView):
 
 class BookingAPI(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         user = request.user
-        print(user.id)
         return Response({"message": "Bookings fethched", "data": {}, "status" : True})
     
     def post(self, request):
@@ -266,7 +267,7 @@ class BookingAPI(APIView):
 
 
 class HotelRatingAPI(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         user = request.user
@@ -339,14 +340,17 @@ class AmenityViewset(viewsets.ModelViewSet):
 from utility.permissions import IsManager,RoleAccess
 
 class AmenityViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated,IsManager]
+    permission_classes = [AllowAny]
     queryset = Amenity.objects.all()
     serializer_class = AmenitySerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({"count" : queryset.count(),"message": "Amenities fetched successfully", "data": serializer.data, "status" : True})
+        try:
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({"count" : queryset.count(),"message": "Amenities fetched successfully", "data": serializer.data, "status" : True})
+        except Exception as e:
+            return Response({"message": str(e), "status" : False})
 
     def create(self, request, *args, **kwargs):
         

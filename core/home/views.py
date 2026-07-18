@@ -30,7 +30,9 @@ def employee_list(request):
     #raise Exception("This is a test exception for debugging purposes.")
     return render(request, 'employee_list.html', {'departments': departments})
 
+import time
 def index(request):
+    # time.sleep(10)
     tasks = TaskManager.objects.all()
     print(tasks.query)
     for task in tasks:
