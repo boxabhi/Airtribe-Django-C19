@@ -1,6 +1,9 @@
 import random
+import threading
 from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render,redirect
+
+from home.pdf_generators import generate_pdf_with_pyhtml2pdf
 from .serializers import CreateEmployeeSerializer, DepartmentSerializer,EmployeeSerializer, LoginSerializer, ResgiterSerializer, SkillsSerializer
 from home.models import Department, Employee, Person, Skills, TaskManager
 from faker import Faker
@@ -327,12 +330,22 @@ def create_employee_api(request):
     return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
 
 
+def send_email_to_user(email, username):
+    time.sleep(5)
+    print(f"Sending email to {email} for user {username}")
+    return True
+
+
+from core.celery import data_to_pdf_convertor, send_email_task
+
 @api_view(['POST'])
 def register_api(request):
     data = request.data
     serializer = ResgiterSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        #serializer.save()
+        #send_email_to_user(serializer.validated_data['email'], serializer.validated_data['username'])
+        send_email_task.delay(serializer.validated_data['email'], serializer.validated_data['username'])
         return Response({"message": "User registered successfully", "payload": serializer.data})
     return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
 
@@ -361,3 +374,50 @@ def login_api(request):
 def logout_api(request):
     request.user.auth_token.delete()
     return Response({"message": "Logout successful"})
+
+
+@api_view(['GET'])
+def download_people(request):
+    data = request.GET.dict()
+    print(f"Received data for PDF generation: {data}")
+    people = Person.objects.all()
+    if data.get('age'):
+        if data.get('age_type') == "gte":
+            people = people.filter(age__gte=data.get('age'))
+        elif data.get('age_type') == "lte":
+            people = people.filter(age__lte=data.get('age'))
+        elif data.get('age_type') == "eq":
+            people = people.filter(age=data.get('age'))
+
+    if data.get('name'):
+        people = people.filter(name__icontains=data.get('name'))
+
+    #print(f"Filtered People: {people}")
+    
+    datas = []
+    for person in people:
+        datas.append({
+            "id" : person.id,
+            "name": person.name,
+            "age": person.age,
+            "email": person.email,
+            "address": person.address,
+        })
+    task_id = data_to_pdf_convertor.delay(datas)
+    
+    return JsonResponse({"message": "PDF generation task has been initiated. You will receive the PDF shortly.", "task_id": str(task_id)})
+
+
+# schedule, _ = CrontabSchedule.objects.get_or_create(
+#     minute='1',
+#     hour='*',
+#     day_of_week='*',
+#     day_of_month='*',
+#     month_of_year='*',
+# )
+
+# PeriodicTask.objects.create(
+#     crontab=schedule,
+#     name='Importing contacts',
+#     task='core.celery.data_to_pdf_convertor',
+# ) celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler

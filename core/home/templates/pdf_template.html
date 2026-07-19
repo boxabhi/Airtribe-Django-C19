@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <style>
+        /* 
+           CSS Page Media setup for headless Chrome. 
+           This controls the physical PDF page layout.
+        */
+        @page {
+            size: A4 portrait;
+            margin: 20mm 15mm 20mm 15mm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2D3748;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-print-color-adjust: exact; /* Forces Chrome to print background colors */
+            print-color-adjust: exact;
+        }
+
+        /* Header section styling */
+        .report-header {
+            border-bottom: 3px solid #3182CE;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .report-title h1 {
+            font-size: 24pt;
+            color: #1A365D;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .report-meta {
+            font-size: 9pt;
+            color: #718096;
+            text-align: right;
+        }
+
+        /* Modern Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        /* Prevents Chrome from awkwardly splitting a single row across two pages */
+        tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        th {
+            background-color: #2B6CB0 !important; /* !important ensures background color prints */
+            color: #ffffff !important;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 14px;
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 14px;
+            font-size: 10.5pt;
+            border-bottom: 1px solid #E2E8F0;
+            color: #4A5568;
+        }
+
+        /* Zebra striping */
+        tbody tr:nth-child(even) {
+            background-color: #F7FAFC !important;
+        }
+
+        /* Footer styling via pure CSS counter */
+        .report-footer {
+            position: fixed;
+            bottom: -10mm;
+            left: 0;
+            right: 0;
+            text-align: right;
+            font-size: 8pt;
+            color: #A0AEC0;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loaded custom filter for dynamic dict lookup -->
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <div class="report-title">
+            <h1>{{ title }}</h1>
+        </div>
+        <div class="report-meta">
+            <p>Generated dynamically via System Export</p>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <table>
+        <thead>
+            <tr>
+                {% for header in headers %}
+                    <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.age }}</td>
+                    <td>{{ row.email }}</td>
+                    <td>{{ row.address }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Persistent Footer -->
+    <div class="report-footer">
+        Confidential Document
+    </div>
+
+</body>
+</html>

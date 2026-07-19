@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from home.views import (create_employee_api, department_api, employee_api, example_api, login_api, logout_api, register_api)
+from home.views import (create_employee_api, department_api, download_people, employee_api, example_api, login_api, logout_api, register_api)
 from hotel.views import (AmenityAPI, AdminHotelAPI,
                           HotelAPI,BookingAPI,HotelRatingAPI,AmenityViewset)
 from rest_framework import routers
@@ -39,6 +39,7 @@ urlpatterns = [
     path('bookings/', BookingAPI.as_view(), name='booking_api'),
     path('ratings/', HotelRatingAPI.as_view(), name='hotel_rating_api'),
     path('logout/', logout_api, name='logout_api'),
+    path('download-people/', download_people, name='download_people'),
     #path('amenity-mixin/', AmenityAPIMixin.as_view(), name='amenity_api_mixin'),
     path('api-view/', example_api, name='api_view'),
 ]

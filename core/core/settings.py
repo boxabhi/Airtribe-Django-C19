@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'hotel',
     'django_prometheus',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -226,3 +227,12 @@ sentry_sdk.init(
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
     send_default_pii=True,
 )
+
+
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
