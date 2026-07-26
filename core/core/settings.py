@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     # 'rest_framework.authtoken'    ,
     'rest_framework_simplejwt',
     'hotel',
+    'orders',
     'django_prometheus',
     'django_celery_beat',
 ]
@@ -88,7 +90,9 @@ TEMPLATES = [
 
 
 
-WSGI_APPLICATION = 'core.wsgi.application'
+#WSGI_APPLICATION = 'core.wsgi.application'
+
+ASGI_APPLICATION = 'core.asgi.application'
 
 
 
@@ -230,9 +234,21 @@ sentry_sdk.init(
 
 
 
+
+
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
 ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}

@@ -1,3 +1,6 @@
+from decimal import Decimal
+import re
+
 from django.db import models
 from utility.models import BaseModel
 from django.contrib.auth.models import User
@@ -54,30 +57,36 @@ class Booking(BaseModel):
         return f"Booking - {self.user.username} | Hotel : {self.hotel.name} | Check-in : {self.check_in_date} | Check-out : {self.check_out_date}"
 
 
-
 @receiver(pre_save, sender=Booking)
-def pre_save_hotel_booking(sender, instance, **kwargs):
-    hotel = instance.hotel
-    price = hotel.price
+def calculate_booking_total_price(sender, instance, **kwargs):
+    if not instance.hotel_id:
+        return
+    if not instance.check_in_date or not instance.check_out_date:
+        return
     total_days = (instance.check_out_date - instance.check_in_date).days
-    instance.total_price = price * total_days 
+    if total_days <= 0:
+        instance.total_price = Decimal("0.00")
+        return
+
+    instance.total_price = instance.hotel.price * total_days
 
 
 @receiver(post_save, sender=HotelRating)
-def post_save_hotel_rating(sender, instance, created, **kwargs):
-    print("Value for Created:", created)
-    if created:
-        characters = instance.review.split(' ')
-        for character in characters:
-            if character.lower() in ['bad', 'poor', 'terrible', 'awful', 'horrible']:
-                instance.is_abusive = True
-                instance.is_published = False
-                instance.save()
-            else:
-                instance.is_published = True
-                instance.is_abusive = False
-                instance.save()
-
-    print("Cleaned Hotel Rating Updated Successfully!")
-
-
+def moderate_hotel_rating(sender, instance, created, **kwargs):
+    ABUSIVE_WORDS = {
+        "bad",
+        "poor",
+        "terrible",
+        "awful",
+        "horrible",
+    }
+    review = instance.review or ""
+    words = set(re.findall(r"\b\w+\b", review.lower()))
+    contains_abusive_word = bool(words.intersection(ABUSIVE_WORDS))
+    expected_is_abusive = contains_abusive_word
+    expected_is_published = not contains_abusive_word
+    if (instance.is_abusive != expected_is_abusive or instance.is_published != expected_is_published ):
+        HotelRating.objects.filter(pk=instance.pk).update(
+            is_abusive=expected_is_abusive,
+            is_published=expected_is_published,
+        )

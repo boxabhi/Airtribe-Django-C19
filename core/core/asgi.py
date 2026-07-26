@@ -8,9 +8,22 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 """
 
 import os
-
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-
+from orders.consumers import OrderConsumer
+from django.urls import path
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
 application = get_asgi_application()
+
+ws_patterns = [
+    path("ws/orders/<str:order_id>/", OrderConsumer.as_asgi()),
+]
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": URLRouter(ws_patterns),
+})
+
+
+# ws://127.0.0.1:8000/ws/orders/OD202607251/

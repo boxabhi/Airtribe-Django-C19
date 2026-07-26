@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <title>Order Details</title>
+    </head>
+    <body>
+        <h1>Order Details</h1>
+        <p>Order ID: {{ order.order_id }}</p>
+        <p>Menu Item: {{ order.menu.name }}</p>
+        <p>Quantity: {{ order.quantity }}</p>
+        <p>Order Image: <img height="100" src="{{ order.menu.image }}" alt="{{ order.menu.name }}"></p>
+        <p>Status: <span id="order_status">{{ order.order_status }}</span></p>
+    </body>
+
+    <script>
+        var order_id = "{{ order.order_id }}";
+        var socket = new WebSocket('ws://127.0.0.1:8000/ws/orders/' + order_id + '/');
+        socket.onopen = function(e) {
+            console.log("WebSocket connection established.");
+        };
+
+        socket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            console.log("Received data:", data);
+            if(document.getElementById("order_status")) {
+                document.getElementById("order_status").innerText = data.payload.order_status;
+            }
+        
+        };
+
+        socket.onclose = function(e) {
+            console.log("WebSocket connection closed.");
+        };
+
+
+    </script>
+
+
+</html>
