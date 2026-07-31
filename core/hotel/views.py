@@ -213,7 +213,6 @@ import time
 class HotelAPI(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
-        time.sleep(5)  # Simulate a delay for testing purposes
         queryset = Hotel.objects.all()
         state  = request.GET.get("state")
         price = request.GET.get("price")

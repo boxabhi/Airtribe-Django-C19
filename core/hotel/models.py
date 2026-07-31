@@ -1,17 +1,21 @@
 from decimal import Decimal
 import re
-
+from django.core.exceptions import ValidationError
 from django.db import models
 from utility.models import BaseModel
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save,pre_save, pre_delete, post_delete
 from django.dispatch import receiver
 class Amenity(BaseModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"Amenity - {self.name}"
+
+    def clean(self):
+        if self.name and len(self.name) > 50:
+            raise ValidationError("Amenity name cannot exceed 50 characters.")
 
 class Hotel(BaseModel):
     name = models.CharField(max_length=255)

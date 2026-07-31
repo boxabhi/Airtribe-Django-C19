@@ -1,4 +1,5 @@
 from django.db import models
+from utility.models import BaseModel
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from datetime import datetime
@@ -59,3 +60,12 @@ def create_order_id(sender, instance, **kwargs):
         }
     )
     print("CHANNLE INFORMATION SENT")
+
+
+class WalletMoney(BaseModel):
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"WalletMoney - {self.user.username} | Amount : {self.amount}"
+

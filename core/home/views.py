@@ -364,10 +364,11 @@ def login_api(request):
             return Response({"message": "Login successful", "token" : {
                 'refresh': str(jwt_token),
                 'access': str(jwt_token.access_token),
-            }})
+                'status' : True
+            }}, status=200)
         else:
-            return Response({"message": "Wrong password"}, status=401)
-    return Response({"message": "Invalid data", "errors": serializer.errors}, status=400)
+            return Response({"message": "Wrong password", 'status' : False}, status=401)
+    return Response({"message": "Invalid data", "errors": serializer.errors,'status' : False}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

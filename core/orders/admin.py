@@ -4,7 +4,7 @@ from django.contrib import admin
 
 
 
-from .models import Menu, Order
+from .models import Menu, Order, WalletMoney
 
 
 class MenuAdmin(admin.ModelAdmin):
@@ -17,5 +17,11 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ('order_status',)
 
 
+class WalletMoneyAdmin(admin.ModelAdmin):
+    list_display = ('user', 'amount')
+    search_fields = ('user__username',)
+
+
 admin.site.register(Menu, MenuAdmin)
 admin.site.register(Order, OrderAdmin)
+admin.site.register(WalletMoney, WalletMoneyAdmin)

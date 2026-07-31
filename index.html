@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scratch & Act — Emoji Charades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#120f28;
+    --stage:#1d1948;
+    --stage2:#241c5c;
+    --coral:#ff5d68;
+    --lime:#c8ff5e;
+    --gold:#ffc65c;
+    --violet:#9b8bff;
+    --cream:#fff8ec;
+    --line:rgba(255,248,236,.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:26px 16px 40px;
+    background:
+      radial-gradient(1100px 500px at 50% -10%, #362a86 0%, transparent 60%),
+      radial-gradient(700px 400px at 100% 100%, #3a1f5c 0%, transparent 55%),
+      var(--ink);
+    color:var(--cream);
+    font-family:'Work Sans', system-ui, sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{ width:min(96vw, 560px); text-align:center; }
+
+  header{ margin-bottom:20px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--gold); font-weight:600; margin-bottom:8px;
+  }
+  .eyebrow::before,.eyebrow::after{ content:""; width:18px; height:1px; background:var(--gold); opacity:.6; }
+  h1{
+    font-family:'Fredoka', system-ui, sans-serif; font-weight:700;
+    font-size:clamp(2rem,7vw,2.9rem); margin:0; letter-spacing:-.01em;
+    background:linear-gradient(100deg,var(--cream) 30%,var(--lime) 65%,var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub{ margin:8px 0 0; font-size:.95rem; color:#d8d2f5; opacity:.85; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin:18px 0; }
+  .chip{
+    font-size:.78rem; font-weight:600; padding:7px 13px; border-radius:99px;
+    background:rgba(255,255,255,.05); border:1px solid var(--line); color:#cfc9f0;
+    cursor:pointer; transition:.15s;
+  }
+  .chip.on{ background:var(--lime); color:#152109; border-color:var(--lime); }
+
+  .stage{ position:relative; width:100%; aspect-ratio:1.35; margin:0 auto; }
+  .spotlight{
+    position:absolute; inset:-8%; border-radius:32px; z-index:0;
+    background:conic-gradient(from 0deg, var(--violet), var(--coral), var(--gold), var(--lime), var(--violet));
+    filter:blur(30px); opacity:.5; animation:spin 9s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .cardBox{
+    position:absolute; inset:0; z-index:1; border-radius:26px; overflow:hidden;
+    background:linear-gradient(160deg,#fff8ec,#ffe9c9);
+    border:1.5px solid var(--line);
+  }
+  .reveal-face{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:#1c1638; padding:16px; text-align:center;
+  }
+  .reveal-face .emoji{ font-size:clamp(4.6rem,18vw,7.6rem); line-height:1; filter:drop-shadow(0 8px 14px rgba(60,30,90,.25)); }
+  .reveal-face .word{
+    margin-top:10px; font-family:'Fredoka'; font-weight:600; font-size:clamp(1.1rem,4vw,1.5rem);
+    color:#3a2a6b; padding:0 12px;
+  }
+  .reveal-face .cat{ margin-top:8px; font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8b6bd6; }
+
+  canvas{ position:absolute; inset:0; width:100%; height:100%; z-index:2; cursor:crosshair; touch-action:none; }
+
+  .btnRow{ display:flex; justify-content:center; gap:12px; margin-top:20px; }
+  button{
+    font-family:'Fredoka'; font-weight:600; font-size:1rem;
+    padding:14px 22px; border:0; border-radius:16px; cursor:pointer;
+    transition:transform .12s, box-shadow .12s;
+  }
+  button:active{ transform:scale(.97); }
+  #revealBtn{ background:rgba(255,255,255,.07); color:var(--cream); border:1px solid var(--line); }
+  #revealBtn:hover{ background:rgba(255,255,255,.14); }
+  #nextBtn{
+    background:linear-gradient(120deg,var(--lime),#8fe23b); color:#122008;
+    box-shadow:0 12px 22px -8px rgba(200,255,94,.55);
+  }
+  #nextBtn:hover{ filter:brightness(1.05); }
+
+  .roundInfo{ text-align:center; margin-top:16px; font-size:.82rem; color:#b6adf0; }
+  .rules{ max-width:480px; margin:26px auto 0; text-align:center; font-size:.82rem; line-height:1.5; color:#a99fe0; }
+  .rules b{ color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Party Mode</div>
+    <h1>Scratch &amp; Act</h1>
+    <p class="sub">Scratch the card to see what you're acting out. Everyone else guesses out loud.</p>
+  </header>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="stage">
+    <div class="spotlight"></div>
+    <div class="cardBox">
+      <div class="reveal-face">
+        <div class="emoji" id="emoji"></div>
+        <div class="word" id="word"></div>
+        <div class="cat" id="catLabel"></div>
+      </div>
+      <canvas id="scratch"></canvas>
+    </div>
+  </div>
+
+  <div class="btnRow">
+    <button id="revealBtn">Reveal all</button>
+    <button id="nextBtn">Next →</button>
+  </div>
+
+  <div class="roundInfo" id="roundInfo"></div>
+
+  <p class="rules">No talking, spelling, or pointing at objects in the room — <b>act it out</b>. Only the actor should scratch and look.</p>
+</div>
+
+<script>
+  const DATA = {
+    actions: { label:"Actions", items:[
+      {e:"🏃",w:"Running"},{e:"🕺",w:"Dancing"},{e:"😴",w:"Sleeping"},{e:"🎤",w:"Singing"},
+      {e:"🍳",w:"Cooking"},{e:"📖",w:"Reading"},{e:"✍️",w:"Writing"},{e:"🚿",w:"Taking a shower"},
+      {e:"🧹",w:"Sweeping"},{e:"🎣",w:"Fishing"},{e:"🧗",w:"Climbing"},{e:"🏊",w:"Swimming"},
+      {e:"🎨",w:"Painting"},{e:"🪥",w:"Brushing teeth"},{e:"📸",w:"Taking a photo"},{e:"☎️",w:"Talking on the phone"},
+      {e:"🚗",w:"Driving a car"},{e:"🍜",w:"Eating noodles"},{e:"🧘",w:"Meditating"},{e:"🛍️",w:"Shopping"}
+    ]},
+    animals: { label:"Animals", items:[
+      {e:"🐘",w:"Elephant"},{e:"🦒",w:"Giraffe"},{e:"🐍",w:"Snake"},{e:"🦅",w:"Eagle"},
+      {e:"🐒",w:"Monkey"},{e:"🐢",w:"Turtle"},{e:"🦋",w:"Butterfly"},{e:"🐧",w:"Penguin"},
+      {e:"🦘",w:"Kangaroo"},{e:"🐬",w:"Dolphin"},{e:"🦁",w:"Lion"},{e:"🐝",w:"Bee"}
+    ]},
+    movies: { label:"Movies & Shows", items:[
+      {e:"🦁👑",w:"A movie about a lion prince who becomes king"},
+      {e:"🕷️🧑",w:"A superhero movie about a web-slinging hero"},
+      {e:"🧙‍♂️💍",w:"A fantasy trilogy about a ring that must be destroyed"},
+      {e:"🦈",w:"A movie about a giant shark"},
+      {e:"🚢🧊",w:"A romance movie about a ship that sinks"},
+      {e:"👻🚫",w:"A comedy about a team that catches ghosts"},
+      {e:"🐠🔍",w:"An animated movie about a lost clownfish"},
+      {e:"🏠🎈",w:"An animated movie about a house that flies with balloons"}
+    ]},
+    food: { label:"Food", items:[
+      {e:"🍕",w:"Pizza"},{e:"🍔",w:"Burger"},{e:"🍦",w:"Ice cream"},{e:"🍣",w:"Sushi"},
+      {e:"🌮",w:"Taco"},{e:"🥐",w:"Croissant"},{e:"🍩",w:"Donut"},{e:"🍿",w:"Popcorn"}
+    ]},
+    jobs: { label:"Jobs", items:[
+      {e:"👨‍🚒",w:"Firefighter"},{e:"👩‍⚕️",w:"Doctor"},{e:"👨‍🍳",w:"Chef"},{e:"👮",w:"Police officer"},
+      {e:"👨‍🌾",w:"Farmer"},{e:"🧑‍🚀",w:"Astronaut"},{e:"👩‍🏫",w:"Teacher"},{e:"🧑‍✈️",w:"Pilot"}
+    ]}
+  };
+
+  const state = { active:new Set(Object.keys(DATA)), order:[], index:0 };
+
+  const chipsEl = document.getElementById('chips');
+  Object.entries(DATA).forEach(([key,val])=>{
+    const c = document.createElement('div');
+    c.className = 'chip on';
+    c.textContent = val.label;
+    c.dataset.key = key;
+    c.onclick = () => {
+      if(state.active.has(key)){
+        if(state.active.size===1) return;
+        state.active.delete(key); c.classList.remove('on');
+      } else { state.active.add(key); c.classList.add('on'); }
+      buildOrder(); loadRound();
+    };
+    chipsEl.appendChild(c);
+  });
+
+  function buildOrder(){
+    let pool = [];
+    state.active.forEach(k=> DATA[k].items.forEach(it=> pool.push({...it, cat:DATA[k].label})));
+    for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+    state.order = pool; state.index = 0;
+  }
+
+  const emojiEl = document.getElementById('emoji');
+  const wordEl = document.getElementById('word');
+  const catLabel = document.getElementById('catLabel');
+  const roundInfo = document.getElementById('roundInfo');
+  const cardBox = document.querySelector('.cardBox');
+  const canvas = document.getElementById('scratch');
+  const ctx = canvas.getContext('2d');
+  let drawing = false, last = null;
+
+  function sizeCanvas(){
+    const r = cardBox.getBoundingClientRect();
+    const d = devicePixelRatio || 1;
+    canvas.width = r.width * d; canvas.height = r.height * d;
+    ctx.setTransform(d,0,0,d,0,0);
+    paintCover();
+  }
+  function paintCover(){
+    const r = cardBox.getBoundingClientRect();
+    ctx.globalCompositeOperation = 'source-over';
+    const g = ctx.createLinearGradient(0,0,r.width,r.height);
+    g.addColorStop(0,'#7d58e6'); g.addColorStop(.55,'#ff709a'); g.addColorStop(1,'#ffb35c');
+    ctx.fillStyle = g; ctx.fillRect(0,0,r.width,r.height);
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '800 18px Fredoka, system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('SCRATCH TO REVEAL', r.width/2, r.height/2 + 6);
+    ctx.globalCompositeOperation = 'destination-out';
+  }
+  function point(e){
+    const r = canvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+  function scratch(e){
+    if(!drawing) return; e.preventDefault();
+    const p = point(e);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000'; ctx.lineWidth = 46;
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    last = p;
+  }
+  function start(e){ drawing = true; last = point(e); ctx.beginPath(); ctx.arc(last.x, last.y, 23, 0, Math.PI*2); ctx.fill(); }
+  function end(){ drawing = false; last = null; }
+  function showAll(){ ctx.globalCompositeOperation = 'destination-out'; ctx.fillRect(0,0,canvas.width,canvas.height); }
+
+  canvas.addEventListener('pointerdown', start);
+  canvas.addEventListener('pointermove', scratch);
+  window.addEventListener('pointerup', end);
+  canvas.addEventListener('pointerleave', end);
+  document.getElementById('revealBtn').onclick = showAll;
+
+  function loadRound(){
+    if(state.index >= state.order.length) buildOrder();
+    const item = state.order[state.index];
+    emojiEl.textContent = item.e;
+    wordEl.textContent = item.w;
+    catLabel.textContent = item.cat;
+    roundInfo.textContent = `Card ${state.index+1} of ${state.order.length} · ${item.cat}`;
+    sizeCanvas();
+  }
+
+  document.getElementById('nextBtn').onclick = ()=>{ state.index++; loadRound(); };
+  window.addEventListener('resize', sizeCanvas);
+
+  buildOrder(); loadRound();
+</script>
+</body>
+</html>

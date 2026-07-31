@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from orders.views import orders_view
+from orders.views import orders_view, wallet_view
 from home.views import (
     create_todo, dashboard, delete_task, department_api, employee_list, index, contact, about,
     insert_task, login_view, logout_view, seed_fake_data, todo, update_task,registration)
@@ -40,6 +40,7 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('logout/', logout_view, name='logout'),
     path('order/<order_id>/', orders_view, name="orders_view"),
+    path('wallet/', wallet_view, name="wallet_view"),
 
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
