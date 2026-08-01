@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 import os
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-from orders.consumers import OrderConsumer
+from orders.consumers import OrderConsumer,JobConsumer
 from django.urls import path
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
@@ -18,6 +18,7 @@ application = get_asgi_application()
 
 ws_patterns = [
     path("ws/orders/<str:order_id>/", OrderConsumer.as_asgi()),
+    path("ws/job/<str:job_id>/", JobConsumer.as_asgi()),
 ]
 
 application = ProtocolTypeRouter({

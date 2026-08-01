@@ -2,6 +2,8 @@ import os
 
 from celery import Celery
 from home.pdf_generators import generate_pdf_with_pyhtml2pdf
+import pandas as pd
+import time
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
@@ -49,3 +51,38 @@ def company_to_pdf_convertor(self):
             "address": person.address,
         })
     generate_pdf_with_pyhtml2pdf(data)
+
+
+
+@app.task(bind=True, ignore_result=True)
+def import_person_task(self, job_id):
+    from jobs.models import ImportJOB, Person
+    import_job = ImportJOB.objects.get(uid=job_id)
+    file_path = import_job.file.path
+    df = pd.read_excel(file_path)
+    total_records = len(df)
+    import_job.total_records = total_records
+    import_job.save()
+    for index, row in df.iterrows():
+        time.sleep(3)  
+        person = Person(
+            job = import_job,
+            first_name=row['first_name'],
+            last_name=row['last_name'],
+            email=row['email'],
+            phone_number=row['phone_number'],
+            date_of_birth=row['date_of_birth'],
+            address=row['address'],
+            city=row['city'],
+            state=row['state'],
+            pincode=row['pincode'],
+            company=row['company'],
+            job_title=row['job_title']
+        )
+        person.save()
+        import_job.inserted_records = Person.objects.filter(job=import_job).count()
+        import_job.save()
+        
+
+
+

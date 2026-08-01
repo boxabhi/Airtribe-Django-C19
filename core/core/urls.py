@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from jobs.views import index_import_job, real_time_job_data
 from orders.views import orders_view, wallet_view
 from home.views import (
     create_todo, dashboard, delete_task, department_api, employee_list, index, contact, about,
@@ -41,6 +42,8 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('order/<order_id>/', orders_view, name="orders_view"),
     path('wallet/', wallet_view, name="wallet_view"),
+    path('import/', index_import_job, name="index_import_job"),
+    path('real-time-job-data/<job_id>/', real_time_job_data, name="real_time_job_data"),
 
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),

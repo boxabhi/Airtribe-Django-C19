@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'hotel',
     'orders',
+    'jobs',
     'django_prometheus',
     'django_celery_beat',
 ]
