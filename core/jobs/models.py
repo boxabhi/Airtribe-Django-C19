@@ -50,7 +50,7 @@ def send_websocket_event(sender, instance, created, **kwargs):
 
         payload = {
             "event": "new_person",
-            "person": [{
+            "person": {
                 "id": instance.id,
                 "first_name": instance.first_name,
                 "last_name": instance.last_name,
@@ -63,7 +63,7 @@ def send_websocket_event(sender, instance, created, **kwargs):
                 "pincode": instance.pincode,
                 "company": instance.company,
                 "job_title": instance.job_title
-            }],
+            },
             "job_status": {
                 "total_records": instance.job.total_records,
                 "inserted_records": Person.objects.filter(job=instance.job).count(),

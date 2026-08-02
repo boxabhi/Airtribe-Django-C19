@@ -287,7 +287,15 @@
         // Dynamic payload handler for metrics + new row additions
         if (data.payload) {
           if (data.payload.event === "new_person") {
-            dataTable.row.add(data.payload.person).draw(false);
+            // New events contain one person object. Unwrap the legacy
+            // one-item array as well so in-flight workers remain compatible.
+            var person = Array.isArray(data.payload.person)
+              ? data.payload.person[0]
+              : data.payload.person;
+
+            if (person) {
+              dataTable.row.add(person).draw(false);
+            }
             
             // Auto-increment inserted count on each incoming person if total is known
         
